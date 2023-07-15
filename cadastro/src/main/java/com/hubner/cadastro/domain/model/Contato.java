@@ -34,7 +34,6 @@ public class Contato {
     @Size(max = 255)
     private String email;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne
     private Pessoa pessoa;
-
 }
