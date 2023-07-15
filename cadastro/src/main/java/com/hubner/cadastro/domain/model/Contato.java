@@ -1,5 +1,6 @@
 package com.hubner.cadastro.domain.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -35,5 +36,6 @@ public class Contato {
     private String email;
 
     @ManyToOne
+    @JsonIgnore
     private Pessoa pessoa;
 }
