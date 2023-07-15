@@ -33,11 +33,13 @@ public class Pessoa {
     @Size(min = 11, max = 14)
     private String cpf;
 
-    @NotBlank
+    @NotNull
     @Column(name = "data_nascimento")
     private Date dataNascimento;
 
-    @OneToMany(mappedBy = "pessoa")
+    @OneToMany(cascade = CascadeType.ALL,
+               orphanRemoval = true)
+    @JoinColumn(name = "pessoa_id")
     @NotNull
     @Size(min = 1)
     private List<Contato> contatos;
