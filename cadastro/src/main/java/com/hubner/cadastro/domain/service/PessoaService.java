@@ -1,6 +1,9 @@
 package com.hubner.cadastro.domain.service;
 
 import br.com.caelum.stella.validation.CPFValidator;
+
+import com.google.i18n.phonenumbers.NumberParseException;
+import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.hubner.cadastro.domain.dto.FiltroPessoaDTO;
 import com.hubner.cadastro.domain.model.Pessoa;
 import com.hubner.cadastro.domain.repository.PessoaRepository;
@@ -33,9 +36,17 @@ public class PessoaService {
         if (pessoa.getDataNascimento().isAfter(LocalDate.now()))
             throw new RuntimeException("Data de nascimento não pode ser maior que hoje");
 
+        if(pessoa.getContatos().size() == 0)
+            throw new RuntimeException("Ao menos um contato deve ser informado");
+
         pessoa.getContatos().forEach(contato -> {
             if (!this.validaEmail(contato.getEmail()))
                 throw new RuntimeException("Email " + contato.getEmail() + " é inválido");
+
+            if (this.validaTelefone(getSomenteNumeros(contato.getTelefone())))
+                contato.setTelefone(getSomenteNumeros(contato.getTelefone()));
+            else
+                throw new RuntimeException("Telefone " + contato.getTelefone() + " é inválido. Informe o DDD e o número corretamente.");
         });
 
         return this.pessoaRepository.save(pessoa);
@@ -54,6 +65,18 @@ public class PessoaService {
 
     public boolean validaEmail(String email){
         return EmailValidator.getInstance().isValid(email);
+    }
+
+    public boolean validaTelefone(String telefone) {
+        boolean telefoneValido;
+        try {
+            telefoneValido = PhoneNumberUtil
+                                .getInstance()
+                                .isValidNumber(PhoneNumberUtil.getInstance().parse(telefone, "BR"));
+        }catch (Exception e){
+            throw new RuntimeException("Não foi possível validar o telefone: " + telefone);
+        }
+        return telefoneValido;
     }
 
     public String getSomenteNumeros(String texto){
