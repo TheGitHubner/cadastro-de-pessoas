@@ -41,6 +41,4 @@ public class Pessoa {
     @NotNull
     @Size(min = 1)
     private List<Contato> contatos;
-
-    //lista de contatos
 }
