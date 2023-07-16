@@ -31,7 +31,7 @@ public class Contato {
     private String telefone;
 
     @NotBlank
-    @Email
+    @Email(message = "Endereço de e-mail é inválido")
     @Size(max = 255)
     private String email;
 
