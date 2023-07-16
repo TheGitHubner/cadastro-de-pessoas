@@ -1,5 +1,6 @@
 package com.hubner.cadastro.domain.service;
 
+import br.com.caelum.stella.validation.CPFValidator;
 import com.hubner.cadastro.domain.dto.FiltroPessoaDTO;
 import com.hubner.cadastro.domain.model.Pessoa;
 import com.hubner.cadastro.domain.repository.PessoaRepository;
@@ -19,6 +20,32 @@ public class PessoaService {
     @Autowired
     private PessoaRepository pessoaRepository;
 
+    @Transactional
+    public Pessoa criar(Pessoa pessoa) {
+        String cpf = this.getSomenteNumeros(pessoa.getCpf());
+        boolean cpfValido = this.validaCPF(cpf);
+
+        if(cpfValido) pessoa.setCpf(cpf);
+        else throw new RuntimeException("CPF Inválido");
+
+        return this.pessoaRepository.save(pessoa);
+    }
+
+    public boolean validaCPF(String cpf) {
+        CPFValidator cpfValidator = new CPFValidator();
+        try {
+            cpfValidator.assertValid(cpf);
+            return true;
+        }catch(Exception e){
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public String getSomenteNumeros(String texto){
+        return texto.replaceAll("[^0-9]", "");
+    }
+
     public List<Pessoa> getTodasPessoas() {
         return this.pessoaRepository.findAll();
     }
@@ -29,12 +56,9 @@ public class PessoaService {
                                     .orElse(ResponseEntity.notFound().build());
     }
 
-    @Transactional
-    public Pessoa criar(Pessoa pessoa) {
-        return this.pessoaRepository.save(pessoa);
-    }
-
     public Page<Pessoa> getPessoasPaginadoComFiltro(FiltroPessoaDTO filtroPessoaDTO, Integer page, Integer pageSize) {
+        filtroPessoaDTO.setCpf(this.getSomenteNumeros(filtroPessoaDTO.getCpf()));
+
         Pageable pageable = PageRequest.of(page, pageSize, Sort.by("id"));
         return this.pessoaRepository.getPessoasPaginadoComFiltro(filtroPessoaDTO.getNome(),
                                                                  filtroPessoaDTO.getCpf(),
