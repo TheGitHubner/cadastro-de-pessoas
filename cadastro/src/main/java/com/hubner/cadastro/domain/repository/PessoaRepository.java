@@ -1,6 +1,5 @@
 package com.hubner.cadastro.domain.repository;
 
-import com.hubner.cadastro.domain.dto.FiltroPessoaDTO;
 import com.hubner.cadastro.domain.model.Pessoa;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -19,7 +18,8 @@ public interface PessoaRepository extends JpaRepository<Pessoa, Long> {
            " FROM Pessoa p " +
            " WHERE p.nome LIKE CONCAT('%', :nome, '%') " +
            "   AND p.cpf LIKE CONCAT('%', :cpf, '%') " +
-           "   AND p.dataNascimento BETWEEN :dataInicial AND :dataFinal ")
+           "   AND p.dataNascimento BETWEEN :dataInicial AND :dataFinal " +
+           " ORDER BY p.id DESC ")
     Page<Pessoa> getPessoasPaginadoComFiltro(@Param("nome") String nome,
                                              @Param("cpf") String cpf,
                                              @Param("dataInicial") LocalDate dataInicial,
