@@ -3,7 +3,6 @@ package com.hubner.cadastro.api.controller;
 import com.hubner.cadastro.domain.dto.FiltroPessoaDTO;
 import com.hubner.cadastro.domain.model.Pessoa;
 import com.hubner.cadastro.domain.service.PessoaService;
-import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -13,7 +12,6 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import java.util.List;
 
-@AllArgsConstructor
 @RestController
 @RequestMapping("/pessoas")
 public class PessoaController {
@@ -40,8 +38,18 @@ public class PessoaController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Pessoa criarPessoa(@Valid @RequestBody Pessoa pessoa){
-        return this.pessoaService.criar(pessoa);
+    public Pessoa criarPessoa(@Valid @RequestBody Pessoa pessoa) {
+        return this.pessoaService.salvarPessoa(pessoa);
     }
 
+    @PutMapping("/{pessoaId}")
+    public ResponseEntity<Pessoa> alteraPessoa(@PathVariable Long pessoaId,
+                                               @RequestBody Pessoa pessoa) {
+        return this.pessoaService.alterarPessoa(pessoaId, pessoa);
+    }
+
+    @DeleteMapping("/{pessoaId}")
+    public ResponseEntity<Void> deletaCliente(@PathVariable Long pessoaId) {
+        return this.pessoaService.deletarPessoa(pessoaId);
+    }
 }

@@ -1,13 +1,11 @@
 package com.hubner.cadastro.domain.service;
 
-import br.com.caelum.stella.validation.CPFValidator;
 
-import com.google.i18n.phonenumbers.NumberParseException;
-import com.google.i18n.phonenumbers.PhoneNumberUtil;
+import br.com.caelum.stella.validation.CPFValidator;
 import com.hubner.cadastro.domain.dto.FiltroPessoaDTO;
+import com.hubner.cadastro.domain.exception.LancadorExcecao;
 import com.hubner.cadastro.domain.model.Pessoa;
 import com.hubner.cadastro.domain.repository.PessoaRepository;
-import org.apache.commons.validator.routines.EmailValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -24,32 +22,29 @@ import java.util.List;
 public class PessoaService {
     @Autowired
     private PessoaRepository pessoaRepository;
+    @Autowired
+    private ContatoService contatoService;
 
     @Transactional
-    public Pessoa criar(Pessoa pessoa) {
-        String cpf = this.getSomenteNumeros(pessoa.getCpf());
+    public Pessoa salvarPessoa(Pessoa pessoa) {
+        this.validarPessoa(pessoa);
+        return this.pessoaRepository.save(pessoa);
+    }
+
+    private void validarPessoa(Pessoa pessoa) {
+        String cpf = this.contatoService.getSomenteNumeros(pessoa.getCpf());
         boolean cpfValido = this.validaCPF(cpf);
 
         if(cpfValido) pessoa.setCpf(cpf);
-        else throw new RuntimeException("CPF Inválido");
+        else throw new LancadorExcecao("CPF Inválido");
 
         if (pessoa.getDataNascimento().isAfter(LocalDate.now()))
-            throw new RuntimeException("Data de nascimento não pode ser maior que hoje");
+            throw new LancadorExcecao("Data de nascimento não pode ser maior que hoje");
 
         if(pessoa.getContatos().size() == 0)
-            throw new RuntimeException("Ao menos um contato deve ser informado");
+            throw new LancadorExcecao("Ao menos um contato deve ser informado");
 
-        pessoa.getContatos().forEach(contato -> {
-            if (!this.validaEmail(contato.getEmail()))
-                throw new RuntimeException("Email " + contato.getEmail() + " é inválido");
-
-            if (this.validaTelefone(getSomenteNumeros(contato.getTelefone())))
-                contato.setTelefone(getSomenteNumeros(contato.getTelefone()));
-            else
-                throw new RuntimeException("Telefone " + contato.getTelefone() + " é inválido. Informe o DDD e o número corretamente.");
-        });
-
-        return this.pessoaRepository.save(pessoa);
+        pessoa.getContatos().forEach(contatoService::validarContato);
     }
 
     public boolean validaCPF(String cpf) {
@@ -63,26 +58,6 @@ public class PessoaService {
         }
     }
 
-    public boolean validaEmail(String email){
-        return EmailValidator.getInstance().isValid(email);
-    }
-
-    public boolean validaTelefone(String telefone) {
-        boolean telefoneValido;
-        try {
-            telefoneValido = PhoneNumberUtil
-                                .getInstance()
-                                .isValidNumber(PhoneNumberUtil.getInstance().parse(telefone, "BR"));
-        }catch (Exception e){
-            throw new RuntimeException("Não foi possível validar o telefone: " + telefone);
-        }
-        return telefoneValido;
-    }
-
-    public String getSomenteNumeros(String texto){
-        return texto.replaceAll("[^0-9]", "");
-    }
-
     public List<Pessoa> getTodasPessoas() {
         return this.pessoaRepository.findAll();
     }
@@ -94,7 +69,7 @@ public class PessoaService {
     }
 
     public Page<Pessoa> getPessoasPaginadoComFiltro(FiltroPessoaDTO filtroPessoaDTO, Integer page, Integer pageSize) {
-        filtroPessoaDTO.setCpf(this.getSomenteNumeros(filtroPessoaDTO.getCpf()));
+        filtroPessoaDTO.setCpf(this.contatoService.getSomenteNumeros(filtroPessoaDTO.getCpf()));
 
         Pageable pageable = PageRequest.of(page, pageSize, Sort.by("id"));
         return this.pessoaRepository.getPessoasPaginadoComFiltro(filtroPessoaDTO.getNome(),
@@ -102,5 +77,23 @@ public class PessoaService {
                                                                  filtroPessoaDTO.getDataInicial(),
                                                                  filtroPessoaDTO.getDataFinal(),
                                                                  pageable);
+    }
+
+    @Transactional
+    public ResponseEntity<Pessoa> alterarPessoa(Long pessoaId, Pessoa pessoa) {
+        if (!this.pessoaRepository.existsById(pessoaId)) {
+            return ResponseEntity.notFound().build();
+        }
+        pessoa.setId(pessoaId);
+        return ResponseEntity.ok(this.salvarPessoa(pessoa));
+    }
+
+    @Transactional
+    public ResponseEntity<Void> deletarPessoa(Long pessoaId) {
+        if (!this.pessoaRepository.existsById(pessoaId)) {
+            return ResponseEntity.notFound().build();
+        }
+        this.pessoaRepository.deleteById(pessoaId);
+        return ResponseEntity.noContent().build();
     }
 }
