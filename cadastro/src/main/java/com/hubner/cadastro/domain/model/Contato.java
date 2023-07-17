@@ -1,6 +1,7 @@
 package com.hubner.cadastro.domain.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.hubner.cadastro.domain.dto.ContatoRequestDTO;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -38,4 +39,11 @@ public class Contato {
     @ManyToOne
     @JsonIgnore
     private Pessoa pessoa;
+
+    public Contato(ContatoRequestDTO contatoDTO, Pessoa pessoa) {
+        this.nome = contatoDTO.getNome();
+        this.telefone = contatoDTO.getTelefone();
+        this.email = contatoDTO.getEmail();
+        this.pessoa = pessoa;
+    }
 }
