@@ -38,7 +38,7 @@ public class ContatoService {
             throw new LancadorExcecao("Não existe uma pessoa com o id " + contatoDTO.getPessoaId());
         }
 
-        Pessoa pessoa = this.pessoaRepository.getReferenceById(contatoDTO.getPessoaId());
+        Pessoa pessoa = this.getPessoa(contatoDTO.getPessoaId());
         Contato contato = new Contato(contatoDTO, pessoa);
         contato.setId(contatoId);
         this.validarContato(contato);
@@ -46,24 +46,11 @@ public class ContatoService {
         return this.contatoRepository.save(contato);
     }
 
-    public void validarContato(Contato contato) {
-        if(contato.getNome().trim().isEmpty())
-            throw new LancadorExcecao("Nome do contato precisa ser preenchido");
-
-        if (!this.validaEmail(contato.getEmail()))
-            throw new LancadorExcecao("Email " + contato.getEmail() + " é inválido");
-
-        if (this.validaTelefone(this.getSomenteNumeros(contato.getTelefone())))
-            contato.setTelefone(this.getSomenteNumeros(contato.getTelefone()));
-        else
-            throw new LancadorExcecao("Telefone " + contato.getTelefone() + " é inválido. Informe o DDD e o número corretamente.");
-    }
-
     public List<Contato> getTodosContatos() {
         return this.contatoRepository.findAll();
     }
 
-    public ResponseEntity<Contato> getContatosPorId(Long contatoId) {
+    public ResponseEntity<Contato> getContatoPorId(Long contatoId) {
         return this.contatoRepository.findById(contatoId)
                                      .map(ResponseEntity::ok)
                                      .orElse(ResponseEntity.notFound().build());
@@ -92,15 +79,28 @@ public class ContatoService {
             return ResponseEntity.notFound().build();
         }
 
-        Pessoa pessoa = this.contatoRepository.getReferenceById(contatoId).getPessoa();
+        Pessoa pessoa = this.getContato(contatoId).getPessoa();
         if(pessoa.getContatos().size() <= 1)
             throw new LancadorExcecao("Não foi possível excluir pois esse é único contato de " + pessoa.getNome());
 
-        Contato contato = this.contatoRepository.getReferenceById(contatoId);
+        Contato contato = this.getContato(contatoId);
         contato.setPessoa(null);
         this.contatoRepository.deleteById(contatoId);
 
         return ResponseEntity.noContent().build();
+    }
+
+    public void validarContato(Contato contato) {
+        if(contato.getNome().trim().isEmpty())
+            throw new LancadorExcecao("Nome do contato precisa ser preenchido");
+
+        if (!this.validaEmail(contato.getEmail()))
+            throw new LancadorExcecao("Email " + contato.getEmail() + " é inválido");
+
+        if (this.validaTelefone(this.getSomenteNumeros(contato.getTelefone())))
+            contato.setTelefone(this.getSomenteNumeros(contato.getTelefone()));
+        else
+            throw new LancadorExcecao("Telefone " + contato.getTelefone() + " é inválido. Informe o DDD e o número corretamente.");
     }
 
     public boolean validaEmail(String email){
@@ -121,5 +121,13 @@ public class ContatoService {
 
     public String getSomenteNumeros(String texto){
         return texto.replaceAll("[^0-9]", "");
+    }
+
+    public Pessoa getPessoa(Long pessoaId){
+        return this.pessoaRepository.getReferenceById(pessoaId);
+    }
+
+    public Contato getContato(Long contatoId){
+        return this.contatoRepository.getReferenceById(contatoId);
     }
 }

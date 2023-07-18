@@ -26,8 +26,8 @@ public class ContatoController {
     }
 
     @GetMapping("/{contatoId}")
-    public ResponseEntity<Contato> getContatosPorId(@PathVariable Long contatoId){
-        return this.contatoService.getContatosPorId(contatoId);
+    public ResponseEntity<Contato> getContatoPorId(@PathVariable Long contatoId){
+        return this.contatoService.getContatoPorId(contatoId);
     }
 
     @GetMapping

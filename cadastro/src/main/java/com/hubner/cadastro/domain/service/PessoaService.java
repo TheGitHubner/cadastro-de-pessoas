@@ -31,33 +31,6 @@ public class PessoaService {
         return this.pessoaRepository.save(pessoa);
     }
 
-    private void validarPessoa(Pessoa pessoa) {
-        String cpf = this.contatoService.getSomenteNumeros(pessoa.getCpf());
-        boolean cpfValido = this.validaCPF(cpf);
-
-        if(cpfValido) pessoa.setCpf(cpf);
-        else throw new LancadorExcecao("CPF Inválido");
-
-        if (pessoa.getDataNascimento().isAfter(LocalDate.now()))
-            throw new LancadorExcecao("Data de nascimento não pode ser maior que hoje");
-
-        if(pessoa.getContatos().size() == 0)
-            throw new LancadorExcecao("Ao menos um contato deve ser informado");
-
-        pessoa.getContatos().forEach(contatoService::validarContato);
-    }
-
-    public boolean validaCPF(String cpf) {
-        CPFValidator cpfValidator = new CPFValidator();
-        try {
-            cpfValidator.assertValid(cpf);
-            return true;
-        }catch(Exception e){
-            e.printStackTrace();
-            return false;
-        }
-    }
-
     public List<Pessoa> getTodasPessoas() {
         return this.pessoaRepository.findAll();
     }
@@ -95,5 +68,32 @@ public class PessoaService {
         }
         this.pessoaRepository.deleteById(pessoaId);
         return ResponseEntity.noContent().build();
+    }
+
+    private void validarPessoa(Pessoa pessoa) {
+        String cpf = this.contatoService.getSomenteNumeros(pessoa.getCpf());
+        boolean cpfValido = this.validaCPF(cpf);
+
+        if(cpfValido) pessoa.setCpf(cpf);
+        else throw new LancadorExcecao("CPF Inválido");
+
+        if (pessoa.getDataNascimento().isAfter(LocalDate.now()))
+            throw new LancadorExcecao("Data de nascimento não pode ser maior que hoje");
+
+        if(pessoa.getContatos().size() == 0)
+            throw new LancadorExcecao("Ao menos um contato deve ser informado");
+
+        pessoa.getContatos().forEach(contatoService::validarContato);
+    }
+
+    public boolean validaCPF(String cpf) {
+        CPFValidator cpfValidator = new CPFValidator();
+        try {
+            cpfValidator.assertValid(cpf);
+            return true;
+        }catch(Exception e){
+            e.printStackTrace();
+            return false;
+        }
     }
 }
