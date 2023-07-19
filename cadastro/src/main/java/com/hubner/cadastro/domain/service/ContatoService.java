@@ -24,10 +24,13 @@ import java.util.Objects;
 
 @Service
 public class ContatoService {
-    @Autowired
     private ContatoRepository contatoRepository;
     @Autowired
     private PessoaRepository pessoaRepository;
+
+    public ContatoService(ContatoRepository contatoRepository) {
+        this.contatoRepository = contatoRepository;
+    }
 
     @Transactional
     public Contato salvarContato(ContatoRequestDTO contatoDTO, Long contatoId) {

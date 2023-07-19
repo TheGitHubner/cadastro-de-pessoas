@@ -2,7 +2,6 @@ package com.hubner.cadastro.domain.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hubner.cadastro.domain.dto.ContatoRequestDTO;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -14,7 +13,6 @@ import javax.validation.constraints.Size;
 
 @Getter
 @Setter
-@AllArgsConstructor
 @NoArgsConstructor
 @Entity
 @Table(name = "contato")
@@ -44,6 +42,13 @@ public class Contato {
         this.nome = contatoDTO.getNome();
         this.telefone = contatoDTO.getTelefone();
         this.email = contatoDTO.getEmail();
+        this.pessoa = pessoa;
+    }
+
+    public Contato(String nome, String telefone, String email, Pessoa pessoa) {
+        this.nome = nome;
+        this.telefone = telefone;
+        this.email = email;
         this.pessoa = pessoa;
     }
 }

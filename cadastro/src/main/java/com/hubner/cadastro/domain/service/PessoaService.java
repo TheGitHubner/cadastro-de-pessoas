@@ -20,10 +20,13 @@ import java.util.List;
 
 @Service
 public class PessoaService {
-    @Autowired
-    private PessoaRepository pessoaRepository;
+    private final PessoaRepository pessoaRepository;
     @Autowired
     private ContatoService contatoService;
+
+    public PessoaService(PessoaRepository pessoaRepository) {
+        this.pessoaRepository = pessoaRepository;
+    }
 
     @Transactional
     public Pessoa salvarPessoa(Pessoa pessoa) {

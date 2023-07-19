@@ -1,7 +1,6 @@
 package com.hubner.cadastro.domain.model;
 
 import com.sun.istack.NotNull;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -14,7 +13,6 @@ import java.util.List;
 
 @Getter
 @Setter
-@AllArgsConstructor
 @NoArgsConstructor
 @Entity
 @Table(name = "pessoa")
@@ -41,4 +39,11 @@ public class Pessoa {
     @NotNull
     @Size(min = 1)
     private List<Contato> contatos;
+
+    public Pessoa(String nome, String cpf, LocalDate dataNascimento, List<Contato> contatos) {
+        this.nome = nome;
+        this.cpf = cpf;
+        this.dataNascimento = dataNascimento;
+        this.contatos = contatos;
+    }
 }
